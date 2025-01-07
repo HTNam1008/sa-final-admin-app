@@ -18,7 +18,7 @@ const QuizzGrid: React.FC<QuizzGridProps> = ({ quizzes }) => {
   const router = useRouter();
 
   const handleUpdate = (id: string) => {
-    router.push(`/quiz/update/${id}`);
+    router.push(`/quizzes/update`);
   };
 
   return (

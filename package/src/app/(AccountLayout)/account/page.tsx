@@ -6,7 +6,12 @@ import {
   TextField,
   IconButton,
   Stack,
-  InputAdornment
+  InputAdornment,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from '@mui/material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import PageContainer from '@/app/(DashboardLayout)/components/container/PageContainer';
@@ -34,6 +39,8 @@ interface Account {
 const AccountPage = () => {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
+  const [openDialog, setOpenDialog] = useState(false); // State for dialog
+  const [selectedId, setSelectedId] = useState<string | null>(null); // Track selected ID for deletion
 
   const handleEdit = (id: any) => {
     router.push('/account/update');
@@ -42,15 +49,62 @@ const AccountPage = () => {
     console.log('Search:', searchTerm); // Replace with your search logic
   };
 
+  const handleDelete = (id: string) => {
+    setSelectedId(id);
+    setOpenDialog(true);
+  };
+
+  const confirmDelete = () => {
+    console.log('Delete confirmed for ID:', selectedId);
+    setOpenDialog(false);
+    setSelectedId(null);
+    // Implement actual delete logic here
+  };
+
+  const cancelDelete = () => {
+    setOpenDialog(false);
+    setSelectedId(null);
+  };
+
   
   const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 50 },
-    { field: 'avatar', headerName: 'Avatar', width: 100 },
+    {
+      field: 'avatar',
+      headerName: 'Avatar',
+      width: 100,
+      renderCell: (params) => (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={params.value || 'https://i.pinimg.com/736x/91/54/1c/91541c77e2a2f6e9331c34c477e9ef4b.jpg'} // Fallback to a default image if `avatar` is empty
+          alt="Avatar"
+          style={{ width: '40px', height: '40px', borderRadius: '50%' }}
+        />
+      ),
+    },
     { field: 'username', headerName: 'Username', width: 100 },
     { field: 'fullname', headerName: 'Fullname', width: 150 },
     { field: 'email', headerName: 'Email', width: 150 },
     { field: 'phone', headerName: 'Phone', width: 100 },
-    { field: 'password', headerName: 'Password', width: 150 },
+    {
+      field: 'password',
+      headerName: 'Password',
+      width: 150,
+      renderCell: (params) => {
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        const [isHidden, setIsHidden] = useState(true);
+  
+        const toggleVisibility = () => {
+          setIsHidden(!isHidden);
+        };
+  
+        return (
+          <div onClick={toggleVisibility} style={{ cursor: 'pointer', userSelect: 'none' }}>
+            {isHidden ? '••••••••' : params.value}
+          </div>
+        );
+      },
+    },
     { field: 'role', headerName: 'Role', width: 100 },
     {
       field: 'actions',
@@ -81,19 +135,14 @@ const AccountPage = () => {
       id: '1',
       username: 'akai02',
       fullname: 'Le Thanh Nhan',
-      avatar: '21',
+      avatar: 'https://i.pinimg.com/736x/91/54/1c/91541c77e2a2f6e9331c34c477e9ef4b.jpg',
       role: 'User',
       email:"",
       phone: "",
-      password: ""
+      password: "sss"
     },
     // Add more sample data as needed
   ];
-
-  const handleDelete = (id: string) => {
-    console.log('Delete account:', id);
-    // Implement delete logic
-  };
 
   const filteredRows = rows.filter(row =>
     row.username.toLowerCase().includes(searchTerm.toLowerCase())
@@ -152,6 +201,23 @@ const AccountPage = () => {
         />
         </Box>
       </DashboardCard>
+       {/* Delete Confirmation Dialog */}
+       <Dialog open={openDialog} onClose={cancelDelete}>
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this account? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={cancelDelete} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={confirmDelete} color="error" autoFocus>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </PageContainer>
   );
 };

@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { Box, Stack, TextField, Button } from '@mui/material';
 import QuizzGrid from './components/QuizzGrid';
-import CreateQuizzButton from './components/CreateQuizzButton';
 import AddIcon from '@mui/icons-material/Add';
 import { useRouter } from 'next/navigation';
 import PageContainer from '@/app/(DashboardLayout)/components/container/PageContainer';
@@ -54,7 +53,7 @@ const QuizPage = () => {
       <Box sx={{ width: '100%', padding: 2 }}>
         <Stack
           direction="row"
-          justifyContent="space-between"
+          justifyContent="flex-end"
           alignItems="center"
           spacing={2}
           sx={{ mb: 3 }}
@@ -66,14 +65,6 @@ const QuizPage = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<AddIcon />}
-            onClick={() => router.push('/quizzes/create')}
-          >
-            Create Quizz
-          </Button>
         </Stack>
         <QuizzGrid quizzes={filteredQuizzes} />
       </Box>
