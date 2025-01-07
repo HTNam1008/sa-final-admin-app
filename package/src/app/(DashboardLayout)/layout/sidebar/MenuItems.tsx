@@ -30,9 +30,9 @@ const Menuitems = [
   },
   {
     id: uniqueId(),
-    title: "Store",
+    title: "Account",
     icon: IconLayoutDashboard,
-    href: "/store",
+    href: "/account",
   },
   {
     id: uniqueId(),

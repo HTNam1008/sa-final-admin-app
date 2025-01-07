@@ -1,6 +1,6 @@
 import React from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel, IconButton } from '@mui/material';
-import { Campaign } from '../types';
+import { Campaign } from '../types/index';
 
 interface CampaignTableProps {
   campaigns: Campaign[];
