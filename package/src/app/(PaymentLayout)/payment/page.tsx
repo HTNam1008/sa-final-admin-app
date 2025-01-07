@@ -14,14 +14,10 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import AddIcon from '@mui/icons-material/Add';
 import { useRouter } from 'next/navigation';
+import PaymentTable from './components/PaymentTable';
+import { Payment } from './types';
+import DashboardCard from '@/app/(DashboardLayout)/components/shared/DashboardCard';
 
-interface Payment {
-  id: string;
-  campaign: string;
-  date: string;
-  status: 'COMPLETED' | 'NOT COMPLETE';
-  totalFee: number;
-}
 
 const PaymentPage = () => {
   const router = useRouter();
@@ -53,9 +49,11 @@ const PaymentPage = () => {
     {
       id: '1',
       campaign: 'Summer Campaign',
+      accountID: "A120HNS25",
       date: '2024-01-01',
       status: 'COMPLETED',
-      totalFee: 1000
+      totalFee: 1000,
+      paid: true
     },
     // Add more sample data as needed
   ];
@@ -71,7 +69,8 @@ const PaymentPage = () => {
 
   return (
     <PageContainer title="Payments" description="Payment Management">
-      <Box sx={{ height: 600, width: '100%' }}>
+        <DashboardCard title="History">
+      <Box mb={2} sx={{ height: 600, width: '100%' }}>
         <Stack
           direction="row"
           justifyContent="space-between"
@@ -87,19 +86,11 @@ const PaymentPage = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </Stack>
-        
-        <DataGrid
-          rows={filteredRows}
-          columns={columns}
-          initialState={{
-            pagination: {
-              paginationModel: { pageSize: 5, page: 0 },
-            },
-          }}
-          pageSizeOptions={[5]}
-          checkboxSelection
-        />
+        <PaymentTable payments={rows} onDelete={function (id: string): void {
+          throw new Error('Function not implemented.');
+        } } ></PaymentTable>
       </Box>
+      </DashboardCard>
     </PageContainer>
   );
 };

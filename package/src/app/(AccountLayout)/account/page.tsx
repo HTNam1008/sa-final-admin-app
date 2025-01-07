@@ -12,6 +12,9 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Popover,
+  MenuItem,
+  Typography,
 } from '@mui/material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import PageContainer from '@/app/(DashboardLayout)/components/container/PageContainer';
@@ -23,6 +26,7 @@ import { useRouter } from 'next/navigation';
 import DashboardCard from '@/app/(DashboardLayout)/components/shared/DashboardCard';
 import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
+import FilterListIcon from '@mui/icons-material/FilterList';
 
 
 interface Account {
@@ -41,7 +45,8 @@ const AccountPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [openDialog, setOpenDialog] = useState(false); // State for dialog
   const [selectedId, setSelectedId] = useState<string | null>(null); // Track selected ID for deletion
-
+  const [filterRole, setFilterRole] = useState<string | null>(null); // State for role filter
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null); // Anchor for filter popover
   const handleEdit = (id: any) => {
     router.push('/account/update');
   };
@@ -64,6 +69,19 @@ const AccountPage = () => {
   const cancelDelete = () => {
     setOpenDialog(false);
     setSelectedId(null);
+  };
+
+  const handleFilterClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleFilterClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleFilterSelect = (role: string) => {
+    setFilterRole(role);
+    handleFilterClose();
   };
 
   
@@ -160,24 +178,49 @@ const AccountPage = () => {
           spacing={2}
           sx={{ mb: 3 }}
         >
-           <TextField
-              label="Search Users"
-        variant="outlined"
-        size="small"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton onClick={handleSearch} edge="end">
-                <SearchIcon />
+            <Box display="flex" alignItems="center" gap={1}>
+              <TextField
+                label="Search Users"
+                variant="outlined"
+                size="small"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={handleSearch} edge="end">
+                        <SearchIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              <IconButton onClick={handleFilterClick}>
+                <FilterListIcon />
               </IconButton>
-            </InputAdornment>
-            
-          ),
-             }}
-            />
-
+              <Popover
+                open={Boolean(anchorEl)}
+                anchorEl={anchorEl}
+                onClose={handleFilterClose}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'left',
+                }}
+              >
+                <Box p={2}>
+                  <Typography variant="subtitle1" gutterBottom>
+                    Filter By Role
+                  </Typography>
+                  <MenuItem onClick={() => handleFilterSelect('User')}>User</MenuItem>
+                  <MenuItem onClick={() => handleFilterSelect('Counterpart')}>
+                    Counterpart
+                  </MenuItem>
+                  <MenuItem onClick={() => handleFilterSelect('')}>
+                    Clear Filter
+                  </MenuItem>
+                </Box>
+              </Popover>
+            </Box>
            <Button
             variant="contained"
             color="primary"

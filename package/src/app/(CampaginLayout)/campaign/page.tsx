@@ -14,9 +14,13 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import AddIcon from '@mui/icons-material/Add';
 import { useRouter } from 'next/navigation';
+import CampaignTable from './components/CampaignTable';
+import DashboardCard from '@/app/(DashboardLayout)/components/shared/DashboardCard';
+
 
 interface Campaign {
   id: string;
+  image: string;
   name: string;
   startDate: string;
   endDate: string;
@@ -72,6 +76,7 @@ const CampaignPage = () => {
   const rows: Campaign[] = [
     {
       id: '1',
+      image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjiXI_CVT6hgHAP-C6qYjEUxZZKqKmLgAdcmFtwa6S23b4wDfu44OAnVIO6HC1n2nXSO0B5NISYftGEnbelz0AfoV1R5OeTHyRhycM7GNLhr6UdRnzfTRAhfGeWSZfSw0NPftSXKdPYNPY5/s1600/KFC+Jammo+Obama+1.jpg',
       name: 'Summer Campaign',
       startDate: '2024-01-01',
       endDate: '2024-02-01',
@@ -94,7 +99,8 @@ const CampaignPage = () => {
 
   return (
     <PageContainer title="Campaigns" description="Campaign Management">
-      <Box sx={{ height: 600, width: '100%' }}>
+       <DashboardCard title="Campaigns">
+      <Box mb={2} sx={{ height: 600, width: '100%' }}>
         <Stack
           direction="row"
           justifyContent="space-between"
@@ -118,20 +124,13 @@ const CampaignPage = () => {
             Create Campaign
           </Button>
         </Stack>
-        
-        <DataGrid
-          rows={filteredRows}
-          columns={columns}
-          initialState={{
-            pagination: {
-              paginationModel: { pageSize: 5, page: 0 },
-            },
-          }}
-          pageSizeOptions={[5]}
-          checkboxSelection
-        />
+        <CampaignTable campaigns={rows} onDelete={function (id: string): void {
+          throw new Error('Function not implemented.');
+        } } />
       </Box>
+      </DashboardCard>
     </PageContainer>
+    
   );
 };
 
