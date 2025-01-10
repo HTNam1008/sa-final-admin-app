@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react';
-import { 
-  Box, 
+import {
+  Box,
   Button,
   TextField,
   IconButton,
@@ -13,7 +13,10 @@ import {
   DialogContentText,
   DialogTitle,
   Popover,
-  MenuItem,
+  Radio,
+  FormControl,
+  RadioGroup,
+  FormControlLabel,
   Typography,
 } from '@mui/material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
@@ -80,11 +83,12 @@ const AccountPage = () => {
   };
 
   const handleFilterSelect = (role: string) => {
-    setFilterRole(role);
-    handleFilterClose();
+    setFilterRole((prevRole) =>
+      prevRole === role ? null : role
+    );
   };
 
-  
+
   const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 50 },
     {
@@ -111,11 +115,11 @@ const AccountPage = () => {
       renderCell: (params) => {
         // eslint-disable-next-line react-hooks/rules-of-hooks
         const [isHidden, setIsHidden] = useState(true);
-  
+
         const toggleVisibility = () => {
           setIsHidden(!isHidden);
         };
-  
+
         return (
           <div onClick={toggleVisibility} style={{ cursor: 'pointer', userSelect: 'none' }}>
             {isHidden ? '••••••••' : params.value}
@@ -130,19 +134,19 @@ const AccountPage = () => {
       width: 200,
       renderCell: (params) => (
         <>
-        <IconButton
-          onClick={() => handleEdit(params.row.id)}
-          color="primary"
-        >
-          <EditIcon />
-        </IconButton>
-        <IconButton
-          onClick={() => handleDelete(params.row.id)}
-          color="error"
-        >
-          <DeleteIcon />
-        </IconButton>
-      </>
+          <IconButton
+            onClick={() => handleEdit(params.row.id)}
+            color="primary"
+          >
+            <EditIcon />
+          </IconButton>
+          <IconButton
+            onClick={() => handleDelete(params.row.id)}
+            color="error"
+          >
+            <DeleteIcon />
+          </IconButton>
+        </>
       )
     }
   ];
@@ -155,7 +159,7 @@ const AccountPage = () => {
       fullname: 'Le Thanh Nhan',
       avatar: 'https://i.pinimg.com/736x/91/54/1c/91541c77e2a2f6e9331c34c477e9ef4b.jpg',
       role: 'User',
-      email:"",
+      email: "",
       phone: "",
       password: "sss"
     },
@@ -167,17 +171,17 @@ const AccountPage = () => {
   );
 
   return (
-    
+
     <PageContainer title="Account" description="Account Management">
       <DashboardCard title="Account List">
-        <Box  mb={2} sx={{ height: 600, width: '100%' }}>
-        <Stack
-          direction="row"
-          justifyContent="space-between"
-          alignItems="center"
-          spacing={2}
-          sx={{ mb: 3 }}
-        >
+        <Box mb={2} sx={{ height: 600, width: '100%' }}>
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            spacing={2}
+            sx={{ mb: 3 }}
+          >
             <Box display="flex" alignItems="center" gap={1}>
               <TextField
                 label="Search Users"
@@ -207,45 +211,60 @@ const AccountPage = () => {
                   horizontal: 'left',
                 }}
               >
-                <Box p={2}>
+                <Box p={2} sx={{ width: '200px' }}>
                   <Typography variant="subtitle1" gutterBottom>
                     Filter By Role
                   </Typography>
-                  <MenuItem onClick={() => handleFilterSelect('User')}>User</MenuItem>
-                  <MenuItem onClick={() => handleFilterSelect('Counterpart')}>
-                    Counterpart
-                  </MenuItem>
-                  <MenuItem onClick={() => handleFilterSelect('')}>
-                    Clear Filter
-                  </MenuItem>
+                  <FormControl component="fieldset">
+                    <RadioGroup
+                      value={filterRole}
+                      onChange={(event) => handleFilterSelect(event.target.value)}
+                    >
+                      <FormControlLabel
+                        value="User"
+                        control={<Radio />}
+                        label="User"
+                      />
+                      <FormControlLabel
+                        value="Counterpart"
+                        control={<Radio />}
+                        label="Counterpart"
+                      />
+                    </RadioGroup>
+                  </FormControl>
+                  <Box mt={2} display="flex" justifyContent="flex-end">
+                    <Button onClick={() => handleFilterSelect('')} color="primary">
+                      Reset
+                    </Button>
+                  </Box>
                 </Box>
               </Popover>
             </Box>
-           <Button
-            variant="contained"
-            color="primary"
-            startIcon={<AddIcon />}
-            onClick={() => router.push('/account/create')}
-          >
-            Create User
-          </Button>
-        </Stack>
-        
-        <DataGrid
-          rows={filteredRows}
-          columns={columns}
-          initialState={{
-            pagination: {
-              paginationModel: { pageSize: 5, page: 0 },
-            },
-          }}
-          pageSizeOptions={[5]}
-          checkboxSelection
-        />
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+              onClick={() => router.push('/account/create')}
+            >
+              Create User
+            </Button>
+          </Stack>
+
+          <DataGrid
+            rows={filteredRows}
+            columns={columns}
+            initialState={{
+              pagination: {
+                paginationModel: { pageSize: 5, page: 0 },
+              },
+            }}
+            pageSizeOptions={[5]}
+            checkboxSelection
+          />
         </Box>
       </DashboardCard>
-       {/* Delete Confirmation Dialog */}
-       <Dialog open={openDialog} onClose={cancelDelete}>
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={openDialog} onClose={cancelDelete}>
         <DialogTitle>Confirm Deletion</DialogTitle>
         <DialogContent>
           <DialogContentText>
