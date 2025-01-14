@@ -2,6 +2,7 @@ import React from 'react';
 import { Line } from 'react-chartjs-2';
 import { useTheme } from '@mui/material/styles';
 import { Box, Typography } from '@mui/material';
+import DashboardCard from '@/app/(DashboardLayout)/components/shared/DashboardCard';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -52,7 +53,7 @@ const VoucherChart: React.FC<VoucherChartProps> = ({ data, labels }) => {
         fill: true,
       },
       {
-        label: 'Used Vouchers',
+        label: 'Unused Vouchers',
         data: data.unused,
         borderColor: theme.palette.secondary.main,
         backgroundColor: 'rgba(255, 99, 132, 0.2)',
@@ -71,13 +72,22 @@ const VoucherChart: React.FC<VoucherChartProps> = ({ data, labels }) => {
   };
 
   return (
-    
-      <Box>
-        <Typography variant="h6" gutterBottom>
-          Statistics Overview
-        </Typography>
-        <Line data={chartData} options={options} />
-      </Box>
+    <Box
+      sx={{
+        boxShadow: theme.shadows[3],
+        borderRadius: 2,
+        overflow: 'hidden',
+      }}
+    >
+      <DashboardCard title="Voucher Statistics">
+        <Box>
+          <Typography variant="h6" gutterBottom>
+            Statistics Overview
+          </Typography>
+          <Line data={chartData} options={options} />
+        </Box>
+      </DashboardCard>
+    </Box>
   );
 };
 

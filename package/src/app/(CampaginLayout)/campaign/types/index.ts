@@ -2,7 +2,6 @@
 
 export interface Campaign {
     id: string;
-    image: string;
     name: string;
     startDate: string;
     endDate: string;

@@ -3,7 +3,6 @@
 export interface Payment {
     id: string;
     campaign: string;
-    accountID: string;
     date: string;
     status: PaymentStatus;
     totalFee: number;

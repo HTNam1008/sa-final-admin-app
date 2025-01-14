@@ -1,20 +1,13 @@
 'use client'
-import { useState } from 'react';
-import {
-  Box,
+import { useEffect, useState } from 'react';
+import { 
+  Box, 
   Button,
   TextField,
   IconButton,
   Stack,
-  Popover,
-  MenuItem,
   Typography,
-  Select,
-  FormControl,
-  FormGroup,
-  FormControlLabel,
-  Checkbox
-
+  CircularProgress
 } from '@mui/material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import PageContainer from '@/app/(DashboardLayout)/components/container/PageContainer';
@@ -23,15 +16,11 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import AddIcon from '@mui/icons-material/Add';
 import { useRouter } from 'next/navigation';
-import CampaignTable from './components/CampaignTable';
-import DashboardCard from '@/app/(DashboardLayout)/components/shared/DashboardCard';
-import FilterListIcon from '@mui/icons-material/FilterList';
+import axios from 'axios';
+// import router from 'next/router';
 
-
-
-interface Campaign {
+/* interface Campaign {
   id: string;
-  image: string;
   name: string;
   startDate: string;
   endDate: string;
@@ -41,16 +30,67 @@ interface Campaign {
   paid: boolean;
 }
 
+interface Voucher {
+  id: string;
+  code: string;
+  qr: string;
+  image: string;
+  price: string;
+  description: string;
+  expired: string;
+  status: string;
+}
+
+interface ApiCampaign {
+  id: number;
+  name: string;
+  image: string | null;
+  vouchers: Voucher[];
+  start: string;
+  endDate: string;
+}
+
 const CampaignPage = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
-  const [filterStartDate, setFilterStartDate] = useState('');
-  const [filterEndDate, setFilterEndDate] = useState('');
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [filterStatuses, setFilterStatuses] = useState<string[]>([]);
   const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    const fetchCampaigns = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('/api/events/all', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
 
+        // Map API response to Campaign interface
+        const mappedCampaigns: Campaign[] = response.data.map((item: ApiCampaign) => ({
+          id: item.id.toString(),
+          name: item.name,
+          startDate: new Date(item.start).toLocaleDateString(),
+          endDate: new Date(item.endDate).toLocaleDateString(),
+          status: 'PENDING', // Set default or calculate based on dates
+          initial: item.vouchers.reduce((sum, v) => sum + v.quantityV, 0),
+          remaining: item.vouchers.reduce((sum, v) => sum + v.quantityR, 0),
+          paid: true // Set default or get from API
+        }));
+
+        setCampaigns(mappedCampaigns);
+      } catch (err) {
+        console.error('Error fetching campaigns:', err);
+        setError('Failed to load campaigns');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCampaigns();
+  }, []);
+  
   const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 90 },
     { field: 'name', headerName: 'Name', width: 200 },
@@ -58,19 +98,19 @@ const CampaignPage = () => {
     { field: 'endDate', headerName: 'End Date', width: 130 },
     { field: 'status', headerName: 'Status', width: 130 },
     { field: 'initial', headerName: 'Initial', width: 100 },
-    {
-      field: 'remaining',
-      headerName: 'Remaining',
+    { 
+      field: 'remaining', 
+      headerName: 'Remaining', 
       width: 130,
-      renderCell: (params) => `${params.value}%`
+      renderCell: (params) => `${params.value}%` 
     },
     {
       field: 'paid',
       headerName: 'Paid',
       width: 100,
       renderCell: (params) => (
-        params.value ?
-          <CheckCircleIcon color="success" /> :
+        params.value ? 
+          <CheckCircleIcon color="success" /> : 
           <CancelIcon color="error" />
       )
     },
@@ -79,7 +119,7 @@ const CampaignPage = () => {
       headerName: 'Actions',
       width: 100,
       renderCell: (params) => (
-        <IconButton
+        <IconButton 
           onClick={() => handleDelete(params.row.id)}
           color="error"
         >
@@ -90,172 +130,230 @@ const CampaignPage = () => {
   ];
 
   // Sample data - replace with actual API call
-  const rows: Campaign[] = [
-    {
-      id: '1',
-      image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjiXI_CVT6hgHAP-C6qYjEUxZZKqKmLgAdcmFtwa6S23b4wDfu44OAnVIO6HC1n2nXSO0B5NISYftGEnbelz0AfoV1R5OeTHyRhycM7GNLhr6UdRnzfTRAhfGeWSZfSw0NPftSXKdPYNPY5/s1600/KFC+Jammo+Obama+1.jpg',
-      name: 'Summer Campaign',
-      startDate: '2024-01-01',
-      endDate: '2024-02-01',
-      status: 'PENDING',
-      initial: 1000,
-      remaining: 75,
-      paid: true
-    },
-    // Add more sample data as needed
-  ];
+  // const rows: Campaign[] = [
+  //   {
+  //     id: '1',
+  //     name: 'Summer Campaign',
+  //     startDate: '2024-01-01',
+  //     endDate: '2024-02-01',
+  //     status: 'PENDING',
+  //     initial: 1000,
+  //     remaining: 75,
+  //     paid: true
+  //   },
+  //   // Add more sample data as needed
+  // ];
+
+  useEffect(() => {
+    const fetchCampaigns = async () => {
+      try {
+        const response = await fetch('/api/campaigns');
+        if (!response.ok) {
+          throw new Error('Failed to fetch campaigns');
+        }
+        const data = await response.json();
+        setCampaigns(data);
+      } catch (error) {
+        setError((error as Error).message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCampaigns();
+  }, []);
 
   const handleDelete = (id: string) => {
     console.log('Delete campaign:', id);
     // Implement delete logic
   };
 
-  const handleFilterClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
+  const filteredRows = rows.filter(row =>
+    row.name.toLowerCase().includes(searchTerm.toLowerCase())
+  ); */
 
-  const handleFilterClose = () => {
-    setAnchorEl(null);
-  };
+  interface Voucher {
+    id: string;
+    code: string;
+    price: number;
+    status: string;
+    initQuantity: number;
+    currentQuantity: number;
+  }
+  
+  interface ApiCampaign {
+    id: number;
+    name: string;
+    image: string | null;
+    vouchers: Voucher[];
+    start: string;
+    endDate: string;
+  }
+  
+  interface Campaign {
+    id: string;
+    name: string;
+    startDate: string;
+    endDate: string;
+    status: 'ENDED' | 'NOT_ACCEPTED' | 'PENDING';
+    initial: number;
+    remaining: number;
+    paid: boolean;
+  }
+  
+  const CampaignPage = () => {
+    const router = useRouter();
+    const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
+  
+    useEffect(() => {
+      const fetchCampaigns = async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const response = await axios.get('/api/events/all', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+  
+          const mappedCampaigns: Campaign[] = response.data.map((item: ApiCampaign) => {
+            // Calculate totals
+            const totalInitial = item.vouchers.reduce((sum, v) => sum + v.initQuantity, 0);
+            const totalCurrent = item.vouchers.reduce((sum, v) => sum + v.currentQuantity, 0);
+            const remainingPercentage = totalInitial > 0 
+              ? Math.round((totalCurrent / totalInitial) * 100)
+              : 0;
+  
+            // Determine status based on dates
+            const now = new Date();
+            const endDate = new Date(item.endDate);
+            let status: Campaign['status'] = 'PENDING';
+            
+            if (now > endDate) {
+              status = 'ENDED';
+            }
+  
+            return {
+              id: item.id.toString(),
+              name: item.name,
+              startDate: new Date(item.start).toLocaleDateString(),
+              endDate: new Date(item.endDate).toLocaleDateString(),
+              status,
+              initial: totalInitial,
+              remaining: remainingPercentage,
+              paid: true // Set default or get from API
+            };
+          });
+  
+          setCampaigns(mappedCampaigns);
+        } catch (err) {
+          console.error('Error fetching campaigns:', err);
+          setError('Failed to load campaigns');
+        } finally {
+          setLoading(false);
+        }
+      };
+  
+      fetchCampaigns();
+    }, []);
+  
+    const columns: GridColDef[] = [
+      { field: 'id', headerName: 'ID', width: 90 },
+      { field: 'name', headerName: 'Name', width: 200 },
+      { field: 'startDate', headerName: 'Start Date', width: 130 },
+      { field: 'endDate', headerName: 'End Date', width: 130 },
+      { field: 'status', headerName: 'Status', width: 130 },
+      { field: 'initial', headerName: 'Initial', width: 100 },
+      { 
+        field: 'remaining', 
+        headerName: 'Remaining', 
+        width: 130,
+        renderCell: (params) => `${params.value}%` 
+      },
+      {
+        field: 'paid',
+        headerName: 'Paid',
+        width: 100,
+        renderCell: (params) => (
+          params.value ? 
+            <CheckCircleIcon color="success" /> : 
+            <CancelIcon color="error" />
+        )
+      },
+      {
+        field: 'actions',
+        headerName: 'Actions',
+        width: 100,
+        renderCell: (params) => (
+          <IconButton 
+            // onClick={() => handleDelete(params.row.id)}
+            color="error"
+          >
+            <DeleteIcon />
+          </IconButton>
+        )
+      }
+    ];
 
-  const handleFilterReset = () => {
-    setFilterStatus('');
-    setFilterStartDate('');
-    setFilterEndDate('');
-    setAnchorEl(null);
-  };
-
-  // const filteredRows = rows.filter(row => {
-  //   return (
-  //     row.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-  //     (filterStatus ? row.status === filterStatus : true) &&
-  //     (filterStartDate ? row.startDate >= filterStartDate : true) &&
-  //     (filterEndDate ? row.endDate <= filterEndDate : true)
-  //   );
-  // });
-
-  const handleStatusChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { checked, value } = event.target;
-    setFilterStatuses(prev =>
-      checked ? [...prev, value] : prev.filter(status => status !== value)
+    const filteredRows = campaigns.filter(row =>
+      row.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  };
-
-
+    
   return (
     <PageContainer title="Campaigns" description="Campaign Management">
-      <DashboardCard title="Campaigns">
-        <Box mb={2} sx={{ height: 600, width: '100%' }}>
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            spacing={2}
-            sx={{ mb: 3 }}
+      <Box sx={{ height: 600, width: '100%' }}>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          spacing={2}
+          sx={{ mb: 3 }}
+        >
+          <Typography variant="h2" component="h1">
+            Campaign Management
+          </Typography>
+        </Stack>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          spacing={2}
+          sx={{ mb: 3 }}
+        >
+          <TextField
+            label="Search Campaigns"
+            variant="outlined"
+            size="small"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<AddIcon />}
+            onClick={() => router.push('/campaign/create')}
           >
-            <Box>
-              <TextField
-                label="Search Campaigns"
-                variant="outlined"
-                size="small"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <IconButton onClick={handleFilterClick}>
-                <FilterListIcon />
-              </IconButton>
-              <Popover
-                open={Boolean(anchorEl)}
-                anchorEl={anchorEl}
-                onClose={handleFilterClose}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'left',
-                }}
-              >
-                <Box p={2} sx={{ width: '300px' }}>
-                  <Typography variant="subtitle1" gutterBottom>
-                    Filter Options
-                  </Typography>
-                  <FormControl component="fieldset">
-                    <FormGroup row>
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            checked={filterStatuses.includes('ENDED')}
-                            onChange={handleStatusChange}
-                            value="ENDED"
-                          />
-                        }
-                        label="Ended"
-                      />
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            checked={filterStatuses.includes('NOT_ACCEPTED')}
-                            onChange={handleStatusChange}
-                            value="NOT_ACCEPTED"
-                          />
-                        }
-                        label="Not Accepted"
-                      />
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            checked={filterStatuses.includes('PENDING')}
-                            onChange={handleStatusChange}
-                            value="PENDING"
-                          />
-                        }
-                        label="Pending"
-                      />
-                    </FormGroup>
-                  </FormControl>
-                  <TextField
-                    label="Start Date"
-                    type="date"
-                    value={filterStartDate}
-                    onChange={(e) => setFilterStartDate(e.target.value)}
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                    sx={{ mt: 2 }}
-                  />
-                  <TextField
-                    label="End Date"
-                    type="date"
-                    value={filterEndDate}
-                    onChange={(e) => setFilterEndDate(e.target.value)}
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                    sx={{ mt: 2 }}
-                  />
-                  <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
-                    <Button variant="outlined" onClick={handleFilterReset}>
-                      Reset
-                    </Button>
-                    <Button variant="contained" onClick={handleFilterClose}>
-                      Cancel
-                    </Button>
-                  </Box>
-                </Box>
-              </Popover>
-            </Box>
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<AddIcon />}
-              onClick={() => router.push('/campaign/create')}
-            >
-              Create Campaign
-            </Button>
-          </Stack>
-          <CampaignTable campaigns={rows} onDelete={function (id: string): void {
-            throw new Error('Function not implemented.');
-          }} />
-        </Box>
-      </DashboardCard>
+            Create Campaign
+          </Button>
+        </Stack>
+        
+        <DataGrid
+          rows={loading ? [] : filteredRows}
+          columns={columns}
+          initialState={{
+            pagination: {
+              paginationModel: { pageSize: 5, page: 0 },
+            },
+          }}
+          pageSizeOptions={[5]}
+          checkboxSelection
+          // disableSelectionOnClick
+          loading={loading}
+        />
+      </Box>
     </PageContainer>
-
   );
 };
 

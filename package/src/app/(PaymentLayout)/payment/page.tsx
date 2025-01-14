@@ -1,11 +1,12 @@
 'use client'
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Box, 
   Button,
   TextField,
   IconButton,
-  Stack
+  Stack,
+  Typography
 } from '@mui/material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import PageContainer from '@/app/(DashboardLayout)/components/container/PageContainer';
@@ -14,14 +15,19 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import AddIcon from '@mui/icons-material/Add';
 import { useRouter } from 'next/navigation';
-import PaymentTable from './components/PaymentTable';
-import { Payment } from './types';
-import DashboardCard from '@/app/(DashboardLayout)/components/shared/DashboardCard';
 
+interface Payment {
+  id: string;
+  campaign: string;
+  date: string;
+  status: 'COMPLETED' | 'NOT COMPLETE';
+  totalFee: number;
+}
 
 const PaymentPage = () => {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
+  const [rows, setRows] = useState<Payment[]>([]);
   
   const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 100 },
@@ -44,19 +50,20 @@ const PaymentPage = () => {
     }
   ];
 
-  // Sample data - replace with actual API call
-  const rows: Payment[] = [
-    {
-      id: '1',
-      campaign: 'Summer Campaign',
-      accountID: "A120HNS25",
-      date: '2024-01-01',
-      status: 'COMPLETED',
-      totalFee: 1000,
-      paid: true
-    },
-    // Add more sample data as needed
-  ];
+  const fetchPayments = async () => {
+    try {
+      const response = await fetch('/api/payments');
+      const data = await response.json();
+      setRows(data);
+    } catch (error) {
+      console.error('Error fetching payments:', error);
+    }
+  };
+
+  
+  useEffect(() => {
+    fetchPayments();
+  }, []);
 
   const handleDelete = (id: string) => {
     console.log('Delete payment:', id);
@@ -69,8 +76,18 @@ const PaymentPage = () => {
 
   return (
     <PageContainer title="Payments" description="Payment Management">
-        <DashboardCard title="History">
-      <Box mb={2} sx={{ height: 600, width: '100%' }}>
+      <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          spacing={2}
+          sx={{ mb: 3 }}
+        >
+          <Typography variant="h2" component="h1">
+            Payment Management
+          </Typography>
+        </Stack>
+      <Box sx={{ height: 600, width: '100%' }}>
         <Stack
           direction="row"
           justifyContent="space-between"
@@ -86,11 +103,32 @@ const PaymentPage = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </Stack>
-        <PaymentTable payments={rows} onDelete={function (id: string): void {
-          throw new Error('Function not implemented.');
-        } } ></PaymentTable>
+        
+        <DataGrid
+          rows={filteredRows}
+          columns={columns}
+          sx={{
+            border: '1px solid #ccc',
+            borderRadius: '8px',
+            boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+            backgroundColor: '#fff',
+            '& .MuiDataGrid-columnHeaders': {
+              fontWeight: 'bold',
+              borderBottom: '2px solid #ddd',
+            },
+            '& .MuiDataGrid-cell': {
+              borderBottom: '1px solid #e0e0e0',
+            },
+          }}
+          initialState={{
+            pagination: {
+              paginationModel: { pageSize: 5, page: 0 },
+            },
+          }}
+          pageSizeOptions={[5]}
+          checkboxSelection
+        />
       </Box>
-      </DashboardCard>
     </PageContainer>
   );
 };
