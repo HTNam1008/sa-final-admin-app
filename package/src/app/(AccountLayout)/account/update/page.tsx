@@ -55,13 +55,13 @@ export default function CreateCampaign() {
         }
     };
 
-    const handleCreateCampaign = async () => {
+    const handleCreateAccount = async () => {
         // Handle campaign creation
-        router.push('/account');
+        router.push('/users');
     };
 
     return (
-        <PageContainer title="Create Campaign" description="Create a new campaign">
+        <PageContainer title="Create Account" description="Create a new account">
             <Box component="form" noValidate sx={{ mt: 1 }}>
                 <Stack spacing={3}>
                     {/* Image Upload */}
@@ -119,7 +119,7 @@ export default function CreateCampaign() {
                         required
                         fullWidth
                         label="Phone"
-                        value={formData.password}
+                        value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     />
 
@@ -157,7 +157,7 @@ export default function CreateCampaign() {
                         variant="contained"
                         color="primary"
                         size="large"
-                        onClick={handleCreateCampaign}
+                        onClick={handleCreateAccount}
                     >
                         Update Account
                     </Button>

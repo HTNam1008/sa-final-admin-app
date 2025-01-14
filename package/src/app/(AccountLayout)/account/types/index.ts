@@ -1,14 +1,14 @@
 // app/(DashboardLayout)/campaign/types/index.ts
 
-export interface Campaign {
+export interface Account {
     id: string;
-    name: string;
-    startDate: string;
-    endDate: string;
-    status: CampaignStatus;
-    initial: number;
-    remaining: number; // percentage of vouchers remaining
-    paid: boolean; // indicates payment status
+    username: string;
+    fullname: string;
+    email: string;
+    password: string;
+    phone: string;
+    role: AccountRole;
+    active:boolean;
 }
 
-export type CampaignStatus = 'ENDED' | 'NOT_ACCEPTED' | 'PENDING';
+export type AccountRole = 'User' | 'ADMIN' | 'Counterpart';
