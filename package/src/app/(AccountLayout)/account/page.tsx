@@ -1,7 +1,7 @@
 'use client'
-import { useState } from 'react';
-import { 
-  Box, 
+import { useEffect, useState } from 'react';
+import {
+  Box,
   Button,
   TextField,
   IconButton,
@@ -13,7 +13,10 @@ import {
   DialogContentText,
   DialogTitle,
   Popover,
-  MenuItem,
+  Radio,
+  FormControl,
+  RadioGroup,
+  FormControlLabel,
   Typography,
 } from '@mui/material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
@@ -27,8 +30,9 @@ import DashboardCard from '@/app/(DashboardLayout)/components/shared/DashboardCa
 import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import axios from 'axios';
 
-
+/*
 interface Account {
   id: string;
   username: string;
@@ -80,11 +84,12 @@ const AccountPage = () => {
   };
 
   const handleFilterSelect = (role: string) => {
-    setFilterRole(role);
-    handleFilterClose();
+    setFilterRole((prevRole) =>
+      prevRole === role ? null : role
+    );
   };
 
-  
+
   const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 50 },
     {
@@ -111,11 +116,11 @@ const AccountPage = () => {
       renderCell: (params) => {
         // eslint-disable-next-line react-hooks/rules-of-hooks
         const [isHidden, setIsHidden] = useState(true);
-  
+
         const toggleVisibility = () => {
           setIsHidden(!isHidden);
         };
-  
+
         return (
           <div onClick={toggleVisibility} style={{ cursor: 'pointer', userSelect: 'none' }}>
             {isHidden ? '••••••••' : params.value}
@@ -130,19 +135,19 @@ const AccountPage = () => {
       width: 200,
       renderCell: (params) => (
         <>
-        <IconButton
-          onClick={() => handleEdit(params.row.id)}
-          color="primary"
-        >
-          <EditIcon />
-        </IconButton>
-        <IconButton
-          onClick={() => handleDelete(params.row.id)}
-          color="error"
-        >
-          <DeleteIcon />
-        </IconButton>
-      </>
+          <IconButton
+            onClick={() => handleEdit(params.row.id)}
+            color="primary"
+          >
+            <EditIcon />
+          </IconButton>
+          <IconButton
+            onClick={() => handleDelete(params.row.id)}
+            color="error"
+          >
+            <DeleteIcon />
+          </IconButton>
+        </>
       )
     }
   ];
@@ -155,7 +160,7 @@ const AccountPage = () => {
       fullname: 'Le Thanh Nhan',
       avatar: 'https://i.pinimg.com/736x/91/54/1c/91541c77e2a2f6e9331c34c477e9ef4b.jpg',
       role: 'User',
-      email:"",
+      email: "",
       phone: "",
       password: "sss"
     },
@@ -167,17 +172,17 @@ const AccountPage = () => {
   );
 
   return (
-    
+
     <PageContainer title="Account" description="Account Management">
       <DashboardCard title="Account List">
-        <Box  mb={2} sx={{ height: 600, width: '100%' }}>
-        <Stack
-          direction="row"
-          justifyContent="space-between"
-          alignItems="center"
-          spacing={2}
-          sx={{ mb: 3 }}
-        >
+        <Box mb={2} sx={{ height: 600, width: '100%' }}>
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            spacing={2}
+            sx={{ mb: 3 }}
+          >
             <Box display="flex" alignItems="center" gap={1}>
               <TextField
                 label="Search Users"
@@ -207,45 +212,331 @@ const AccountPage = () => {
                   horizontal: 'left',
                 }}
               >
-                <Box p={2}>
+                <Box p={2} sx={{ width: '200px' }}>
                   <Typography variant="subtitle1" gutterBottom>
                     Filter By Role
                   </Typography>
-                  <MenuItem onClick={() => handleFilterSelect('User')}>User</MenuItem>
-                  <MenuItem onClick={() => handleFilterSelect('Counterpart')}>
-                    Counterpart
-                  </MenuItem>
-                  <MenuItem onClick={() => handleFilterSelect('')}>
-                    Clear Filter
-                  </MenuItem>
+                  <FormControl component="fieldset">
+                    <RadioGroup
+                      value={filterRole}
+                      onChange={(event) => handleFilterSelect(event.target.value)}
+                    >
+                      <FormControlLabel
+                        value="User"
+                        control={<Radio />}
+                        label="User"
+                      />
+                      <FormControlLabel
+                        value="Counterpart"
+                        control={<Radio />}
+                        label="Counterpart"
+                      />
+                    </RadioGroup>
+                  </FormControl>
+                  <Box mt={2} display="flex" justifyContent="flex-end">
+                    <Button onClick={() => handleFilterSelect('')} color="primary">
+                      Reset
+                    </Button>
+                  </Box>
                 </Box>
               </Popover>
             </Box>
-           <Button
-            variant="contained"
-            color="primary"
-            startIcon={<AddIcon />}
-            onClick={() => router.push('/account/create')}
-          >
-            Create User
-          </Button>
-        </Stack>
-        
-        <DataGrid
-          rows={filteredRows}
-          columns={columns}
-          initialState={{
-            pagination: {
-              paginationModel: { pageSize: 5, page: 0 },
-            },
-          }}
-          pageSizeOptions={[5]}
-          checkboxSelection
-        />
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+              onClick={() => router.push('/account/create')}
+            >
+              Create User
+            </Button>
+          </Stack>
+
+          <DataGrid
+            rows={filteredRows}
+            columns={columns}
+            initialState={{
+              pagination: {
+                paginationModel: { pageSize: 5, page: 0 },
+              },
+            }}
+            pageSizeOptions={[5]}
+            checkboxSelection
+          />
         </Box>
       </DashboardCard>
-       {/* Delete Confirmation Dialog */}
-       <Dialog open={openDialog} onClose={cancelDelete}>
+      //{Delete Confirmation Dialog}
+      <Dialog open={openDialog} onClose={cancelDelete}>
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this account? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={cancelDelete} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={confirmDelete} color="error" autoFocus>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </PageContainer>
+  );
+};
+
+export default AccountPage;
+*/
+interface Account {
+  id: string;
+  name: string;
+  avatar: string;
+  email: string;
+  phone: string;
+  dob: string;
+  gender:string;
+}
+
+interface ApiAccount {
+  id: string;
+  name: string;
+  avatar: string;
+  email: string;
+  phone: string;
+  dob: string;
+  gender:string;
+  facebook: string;
+}
+
+const AccountPage = () => {
+  const router = useRouter();
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [openDialog, setOpenDialog] = useState(false); // State for dialog
+  const [selectedId, setSelectedId] = useState<string | null>(null); // Track selected ID for deletion
+  const [filterRole, setFilterRole] = useState<string | null>(null); // State for role filter
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null); // Anchor for filter popover
+  const handleEdit = (id: any) => {
+    router.push('/account/update');
+  };
+  const handleSearch = () => {
+    console.log('Search:', searchTerm); // Replace with your search logic
+  };
+
+  const handleDelete = (id: string) => {
+    setSelectedId(id);
+    setOpenDialog(true);
+  };
+
+  const confirmDelete = () => {
+    console.log('Delete confirmed for ID:', selectedId);
+    setOpenDialog(false);
+    setSelectedId(null);
+    // Implement actual delete logic here
+  };
+
+  const cancelDelete = () => {
+    setOpenDialog(false);
+    setSelectedId(null);
+  };
+
+  const handleFilterClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleFilterClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleFilterSelect = (role: string) => {
+    setFilterRole((prevRole) =>
+      prevRole === role ? null : role
+    );
+  };
+
+
+  const columns: GridColDef[] = [
+    { field: 'id', headerName: 'ID', width: 50 },
+    {
+      field: 'avatar',
+      headerName: 'Avatar',
+      width: 100,
+      renderCell: (params) => (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={params.value || 'https://i.pinimg.com/736x/91/54/1c/91541c77e2a2f6e9331c34c477e9ef4b.jpg'} // Fallback to a default image if `avatar` is empty
+          alt="Avatar"
+          style={{ width: '40px', height: '40px', borderRadius: '50%' }}
+        />
+      ),
+    },
+    { field: 'name', headerName: 'Name', width: 100 },
+    { field: 'dob', headerName: 'Date of birth', width: 150 },
+    { field: 'email', headerName: 'Email', width: 150 },
+    { field: 'phone', headerName: 'Phone', width: 100 },
+    { field: 'gender', headerName: 'Gender', width: 100 },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 200,
+      renderCell: (params) => (
+        <>
+          <IconButton
+            onClick={() => handleEdit(params.row.id)}
+            color="primary"
+          >
+            <EditIcon />
+          </IconButton>
+          <IconButton
+            onClick={() => handleDelete(params.row.id)}
+            color="error"
+          >
+            <DeleteIcon />
+          </IconButton>
+        </>
+      )
+    }
+  ];
+
+  // Sample data - replace with actual API call
+  useEffect(() => {
+    const fetchAccounts = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('/api/users/all/user', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const mappedAccounts: Account[] = response.data.map((item: ApiAccount) => {
+          
+
+          return {
+            id: item.id.toString(),
+            name: item.name,
+            dob: new Date(item.dob).toLocaleDateString(),
+            email: item.email,
+            phone: item.phone,
+            gender: item.gender,
+          };
+        });
+
+        setAccounts(mappedAccounts);
+      } catch (err) {
+        console.error('Error fetching campaigns:', err);
+        setError('Failed to load campaigns');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAccounts();
+  }, []);
+
+  const filteredRows = accounts.filter(row =>
+    row.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+
+    <PageContainer title="Account" description="Account Management">
+      <DashboardCard title="Account List">
+        <Box mb={2} sx={{ height: 600, width: '100%' }}>
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            spacing={2}
+            sx={{ mb: 3 }}
+          >
+            <Box display="flex" alignItems="center" gap={1}>
+              <TextField
+                label="Search Users"
+                variant="outlined"
+                size="small"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={handleSearch} edge="end">
+                        <SearchIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              <IconButton onClick={handleFilterClick}>
+                <FilterListIcon />
+              </IconButton>
+              <Popover
+                open={Boolean(anchorEl)}
+                anchorEl={anchorEl}
+                onClose={handleFilterClose}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'left',
+                }}
+              >
+                <Box p={2} sx={{ width: '200px' }}>
+                  <Typography variant="subtitle1" gutterBottom>
+                    Filter By Role
+                  </Typography>
+                  <FormControl component="fieldset">
+                    <RadioGroup
+                      value={filterRole}
+                      onChange={(event) => handleFilterSelect(event.target.value)}
+                    >
+                      <FormControlLabel
+                        value="User"
+                        control={<Radio />}
+                        label="User"
+                      />
+                      <FormControlLabel
+                        value="Counterpart"
+                        control={<Radio />}
+                        label="Counterpart"
+                      />
+                    </RadioGroup>
+                  </FormControl>
+                  <Box mt={2} display="flex" justifyContent="flex-end">
+                    <Button onClick={() => handleFilterSelect('')} color="primary">
+                      Reset
+                    </Button>
+                  </Box>
+                </Box>
+              </Popover>
+            </Box>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+              onClick={() => router.push('/account/create')}
+            >
+              Create User
+            </Button>
+          </Stack>
+
+          <DataGrid
+            rows={loading ? [] : filteredRows}
+            columns={columns}
+            initialState={{
+              pagination: {
+                paginationModel: { pageSize: 5, page: 0 },
+              },
+            }}
+            pageSizeOptions={[5]}
+            checkboxSelection
+            // disableSelectionOnClick
+            loading={loading}
+          />
+        </Box>
+      </DashboardCard>
+      {/*Delete Confirmation Dialog*/}
+      <Dialog open={openDialog} onClose={cancelDelete}>
         <DialogTitle>Confirm Deletion</DialogTitle>
         <DialogContent>
           <DialogContentText>

@@ -1,17 +1,26 @@
 'use client'
-import { Grid, Box } from '@mui/material';
+import { Grid, Box, Stack, Typography } from '@mui/material';
 import PageContainer from '@/app/(DashboardLayout)/components/container/PageContainer';
 // components
 import GeneralStatistics from '@/app/(DashboardLayout)/components/dashboard/GeneralStatistics';
 import GameStatistics from '@/app/(DashboardLayout)/components/dashboard/GameStatistics';
-import Counterparts from '@/app/(DashboardLayout)/components/dashboard/Counterparts';
+import DiscountVoucher from '@/app/(DashboardLayout)/components/dashboard/DiscountVoucher';
 import VoucherStatistics from '@/app/(DashboardLayout)/components/dashboard/VoucherStatistics';
-import UserStatistics from '@/app/(DashboardLayout)/components/dashboard/UserStatistics';
-
 
 const Dashboard = () => {
   return (
     <PageContainer title="Dashboard" description="Campaign Statistics Dashboard">
+      <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          spacing={2}
+          sx={{ mb: 3 }}
+        >
+          <Typography variant="h2" component="h1">
+            Dashboard
+          </Typography>
+      </Stack>
       <Box>
         <Grid container spacing={3}>
           {/* General Statistics */}
@@ -23,19 +32,13 @@ const Dashboard = () => {
           <Grid item xs={12} lg={6}>
             <GameStatistics />
           </Grid>
-
           <Grid item xs={12} lg={6}>
-            <Counterparts />
+            <DiscountVoucher />
           </Grid>
 
           {/* Voucher Statistics */}
           <Grid item xs={12}>
             <VoucherStatistics />
-          </Grid>
-
-           {/* Voucher Statistics */}
-           <Grid item xs={12}>
-            <UserStatistics />
           </Grid>
         </Grid>
       </Box>
