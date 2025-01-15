@@ -44,7 +44,7 @@ const Header = ({toggleMobileSidebar}: ItemType) => {
 
       try {
         const response = await axios.get(
-          `/api/users/${id}/profile/brand`,
+          `/api/users/${id}/profile/admin`,
           {
             headers: {
               'Authorization': `Bearer ${token}`,
