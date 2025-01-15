@@ -6,10 +6,10 @@ export interface Campaign {
     name: string;
     startDate: string;
     endDate: string;
-    status: CampaignStatus;
+    status: 'ENDED' | 'NOT_ACCEPTED' | 'PENDING';
     initial: number;
-    remaining: number; // percentage of vouchers remaining
-    paid: boolean; // indicates payment status
-}
+    remaining: number;
+    paid: boolean;
+  }
 
 export type CampaignStatus = 'ENDED' | 'NOT_ACCEPTED' | 'PENDING';
